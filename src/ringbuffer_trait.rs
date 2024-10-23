@@ -89,8 +89,11 @@ pub unsafe trait RingBuffer<T>:
     /// An alias is provided with [`push`](RingBuffer::push).
     fn enqueue(&mut self, value: T) -> Option<T>;
 
-    /// dequeues the top item off the ringbuffer, and moves this item out.
+    /// Dequeues the top (oldest, first added) item off the ringbuffer, and moves this item out.
     fn dequeue(&mut self) -> Option<T>;
+
+    /// Dequeues the last (most recently added) item off the ringbuffer, and moves this item out.
+    fn dequeue_back(&mut self) -> Option<T>;
 
     /// dequeues the top item off the queue, but does not return it. Instead it is dropped.
     /// If the ringbuffer is empty, this function is a nop.
