@@ -306,6 +306,21 @@ unsafe impl<T, const CAP: usize> RingBuffer<T> for ConstGenericRingBuffer<T, CAP
         }
     }
 
+    fn dequeue_back(&mut self) -> Option<T> {
+        if self.is_empty() {
+            None
+        } else {
+            let index = crate::mask_modulo(CAP, self.readptr);
+            let res = mem::replace(&mut self.buf[index - 1], MaybeUninit::uninit());
+            self.writeptr -= 1;
+
+            // Safety: the fact that we got this maybeuninit from the buffer (with mask) means that
+            // it's initialized. If it wasn't the is_empty call would have caught it. Values
+            // are always initialized when inserted so this is safe.
+            unsafe { Some(res.assume_init()) }
+        }
+    }
+
     impl_ringbuffer_ext!(
         get_unchecked,
         get_unchecked_mut,

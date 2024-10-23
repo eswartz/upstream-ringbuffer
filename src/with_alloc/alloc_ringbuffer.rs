@@ -273,6 +273,22 @@ unsafe impl<T> RingBuffer<T> for AllocRingBuffer<T> {
         }
     }
 
+    fn dequeue_back(&mut self) -> Option<T> {
+        if self.is_empty() {
+            None
+        } else {
+            // mask with and is allowed here because size is always a power of two
+            let index = mask_and(self.size, self.writeptr - 1);
+            let res = unsafe { get_unchecked_mut(self, index) };
+            self.writeptr -= 1;
+
+            // Safety: the fact that we got this maybeuninit from the buffer (with mask) means that
+            // it's initialized. If it wasn't the is_empty call would have caught it. Values
+            // are always initialized when inserted so this is safe.
+            unsafe { Some(ptr::read(res)) }
+        }
+    }
+
     impl_ringbuffer_ext!(
         get_unchecked,
         get_unchecked_mut,
